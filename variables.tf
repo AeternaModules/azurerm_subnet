@@ -28,9 +28,9 @@ EOT
     resource_group_name                           = string
     virtual_network_name                          = string
     address_prefixes                              = optional(list(string))
-    default_outbound_access_enabled               = optional(bool, true)
-    private_endpoint_network_policies             = optional(string, "Disabled")
-    private_link_service_network_policies_enabled = optional(bool, true)
+    default_outbound_access_enabled               = optional(bool)   # Default: true
+    private_endpoint_network_policies             = optional(string) # Default: "Disabled"
+    private_link_service_network_policies_enabled = optional(bool)   # Default: true
     service_endpoint_policy_ids                   = optional(set(string))
     service_endpoints                             = optional(set(string))
     sharing_scope                                 = optional(string)
