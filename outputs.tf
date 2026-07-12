@@ -1,3 +1,7 @@
+output "subnets_id" {
+  description = "Map of id values across all subnets, keyed the same as var.subnets"
+  value       = { for k, v in azurerm_subnet.subnets : k => v.id }
+}
 output "subnets_address_prefixes" {
   description = "Map of address_prefixes values across all subnets, keyed the same as var.subnets"
   value       = { for k, v in azurerm_subnet.subnets : k => v.address_prefixes }
