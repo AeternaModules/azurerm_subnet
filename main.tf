@@ -13,7 +13,7 @@ resource "azurerm_subnet" "subnets" {
   sharing_scope                                 = each.value.sharing_scope
 
   dynamic "delegation" {
-    for_each = each.value.delegation != null ? [each.value.delegation] : []
+    for_each = each.value.delegation != null ? each.value.delegation : []
     content {
       name = delegation.value.name
       service_delegation {

@@ -34,34 +34,18 @@ EOT
     service_endpoint_policy_ids                   = optional(set(string))
     service_endpoints                             = optional(set(string))
     sharing_scope                                 = optional(string)
-    delegation = optional(object({
+    delegation = optional(list(object({
       name = string
       service_delegation = object({
         actions = optional(set(string))
         name    = string
       })
-    }))
+    })))
     ip_address_pool = optional(object({
       id                     = string
       number_of_ip_addresses = string
     }))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.subnets : (
-        v.delegation == null || (v.delegation.service_delegation.actions == null || (contains(["Microsoft.Network/networkinterfaces/*", "Microsoft.Network/publicIPAddresses/join/action", "Microsoft.Network/publicIPAddresses/read", "Microsoft.Network/virtualNetworks/read", "Microsoft.Network/virtualNetworks/subnets/action", "Microsoft.Network/virtualNetworks/subnets/join/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action", "Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action"], v.delegation.service_delegation.actions)))
-      )
-    ])
-    error_message = "must be one of: Microsoft.Network/networkinterfaces/*, Microsoft.Network/publicIPAddresses/join/action, Microsoft.Network/publicIPAddresses/read, Microsoft.Network/virtualNetworks/read, Microsoft.Network/virtualNetworks/subnets/action, Microsoft.Network/virtualNetworks/subnets/join/action, Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action, Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.subnets : (
-        v.ip_address_pool == null || (can(regex("^[1-9]\\d*$", v.ip_address_pool.number_of_ip_addresses)))
-      )
-    ])
-    error_message = "`number_of_ip_addresses` must be a string that represents a positive number"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_subnet's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
@@ -91,10 +75,16 @@ EOT
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
   # path: delegation.service_delegation.name
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: delegation.service_delegation.actions[*]
+  #   condition: contains(["Microsoft.Network/networkinterfaces/*", "Microsoft.Network/publicIPAddresses/join/action", "Microsoft.Network/publicIPAddresses/read", "Microsoft.Network/virtualNetworks/read", "Microsoft.Network/virtualNetworks/subnets/action", "Microsoft.Network/virtualNetworks/subnets/join/action", "Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action", "Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action"], value)
+  #   message:   must be one of: Microsoft.Network/networkinterfaces/*, Microsoft.Network/publicIPAddresses/join/action, Microsoft.Network/publicIPAddresses/read, Microsoft.Network/virtualNetworks/read, Microsoft.Network/virtualNetworks/subnets/action, Microsoft.Network/virtualNetworks/subnets/join/action, Microsoft.Network/virtualNetworks/subnets/prepareNetworkPolicies/action, Microsoft.Network/virtualNetworks/subnets/unprepareNetworkPolicies/action
   # path: ip_address_pool.id
   #   source:    [from ipampools.ValidateIPamPoolID] !ok
   # path: ip_address_pool.id
   #   source:    [from ipampools.ValidateIPamPoolID] err != nil
+  # path: ip_address_pool.number_of_ip_addresses
+  #   condition: can(regex("^[1-9]\\d*$", value))
+  #   message:   `number_of_ip_addresses` must be a string that represents a positive number
   # path: private_endpoint_network_policies
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
 }
